@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hán Tự Pro - Supabase Status</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #1a73e8;
+            --success: #28a745;
+            --error: #dc3545;
+            --warning: #ffc107;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; background: #f8f9fa; color: #333; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        
+        /* Cụm Label Trạng thái */
+        .status-bar { display: flex; gap: 20px; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
+        .status-item { display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; background: #eee; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        
+        /* Màu trạng thái */
+        .online { color: var(--success); background: #e8f5e9; }
+        .online .dot { background: var(--success); }
+        .offline { color: var(--error); background: #ffebee; }
+        .offline .dot { background: var(--error); }
+        .loading { color: var(--primary); background: #e3f2fd; }
+        .loading .dot { background: var(--primary); animation: blink 1s infinite; }
+
+        textarea { width: 100%; height: 120px; padding: 15px; border-radius: 8px; border: 2px solid #ddd; font-size: 18px; box-sizing: border-box; transition: border 0.3s; }
+        textarea:focus { border-color: var(--primary); outline: none; }
+        
+        .result-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
+        .card { border: 1px solid #eee; padding: 12px; width: 140px; border-radius: 8px; background: #fff; transition: 0.2s; }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .card h3 { margin: 0 0 8px 0; font-size: 32px; color: var(--primary); text-align: center; border-bottom: 2px solid #f0f0f0; }
+        .card p { margin: 4px 0; font-size: 13px; }
+        .label-text { font-size: 10px; color: #999; text-transform: uppercase; display: block; }
+
+        @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
+    </style>
+	<link rel="manifest" href="manifest.json">
+
+	<script>
+	  if ('serviceWorker' in navigator) {
+		window.addEventListener('load', () => {
+		  navigator.serviceWorker.register('sw.js');
+		});
+	  }
+	</script>
+</head>
+<body>
+
+<div class="container">
+    <h2>Tra cứu Hán Tự Đa Ngôn Ngữ</h2>
+
+    <div class="status-bar">
+        <div id="connStatus" class="status-item loading">
+            <span class="dot"></span> Kết nối DB: Đang kiểm tra...
+        </div>
+        <div id="convStatus" class="status-item">
+            <span class="dot"></span> Chế độ: Sẵn sàng
+        </div>
+    </div>
+
+    <textarea id="textInput" placeholder="Dán văn bản chữ Hán vào đây..." oninput="handleSearch()"></textarea>
+    
+    <div id="result" class="result-container"></div>
+</div>
+
+<script>
+    // 1. Cấu hình Supabase
+    const SUPABASE_URL = 'https://lrhohfstskzpuvvrmsqe.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_FfyG4F_xfm92mrI8kCm7Ng_3hat5Ko4';
+    const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Kiểm tra kết nối ngay khi load trang
+    async function checkConnection() {
+        const connLabel = document.getElementById('connStatus');
+        try {
+            // Thử lấy 1 dòng duy nhất để test kết nối
+            const { error } = await _supabase.from('kanji_dictionary').select('Hanzi').limit(1);
+            if (error) throw error;
+            
+            connLabel.className = "status-item online";
+            connLabel.innerHTML = '<span class="dot"></span> Kết nối DB: Đã thông';
+        } catch (err) {
+            connLabel.className = "status-item offline";
+            connLabel.innerHTML = '<span class="dot"></span> Kết nối DB: Lỗi cấu hình';
+            console.error("Lỗi kết nối:", err.message);
+        }
+    }
+
+    let timeout = null;
+    function handleSearch() {
+        const convLabel = document.getElementById('convStatus');
+        convLabel.className = "status-item loading";
+        convLabel.innerHTML = '<span class="dot"></span> Đang chuyển đổi...';
+
+        clearTimeout(timeout);
+        timeout = setTimeout(searchInDatabase, 500);
+    }
+
+    async function searchInDatabase() {
+        const text = document.getElementById('textInput').value;
+        const resultDiv = document.getElementById('result');
+        const convLabel = document.getElementById('convStatus');
+        
+        const chars = [...new Set(text.replace(/\s+/g, '').split(''))];
+        
+        if (chars.length === 0) {
+            resultDiv.innerHTML = "";
+            convLabel.className = "status-item";
+            convLabel.innerHTML = '<span class="dot"></span> Chế độ: Sẵn sàng';
+            return;
+        }
+
+        try {
+            const { data, error } = await _supabase
+                .from('kanji_dictionary')
+                .select('*')
+                .in('Hanzi', chars);
+
+            if (error) throw error;
+console.log(data)
+            // Cập nhật UI kết quả
+            resultDiv.innerHTML = "";
+            const originalChars = text.replace(/\s+/g, '').split('');
+            
+            originalChars.forEach(char => {
+                const found = data.find(d => d.Hanzi === char);
+                const card = document.createElement('div');
+                card.className = 'card';
+                if (found) {
+                    card.innerHTML = `
+                        <h3>${found.Hanzi}</h3>
+                        <p><span class="label-text">Hán Việt</span> <b>${found.HanViet || '-'}</b></p>
+                        <p><span class="label-text">Pinyin</span> ${found.Pinyin || '-'}</p>
+                        <p><span class="label-text">Onyomi</span> ${found.Onyomi || '-'}</p>
+                    `;
+                } else {
+                    card.innerHTML = `<h3>${char}</h3><p style="color:#ccc; text-align:center">Trống</p>`;
+                }
+                resultDiv.appendChild(card);
+            });
+
+            // Cập nhật trạng thái xong
+            convLabel.className = "status-item online";
+            convLabel.innerHTML = `<span class="dot"></span> Đã xong (${data.length} chữ)`;
+
+        } catch (err) {
+            convLabel.className = "status-item offline";
+            convLabel.innerHTML = '<span class="dot"></span> Lỗi convert';
+            console.error(err);
+        }
+    }
+
+    // Chạy kiểm tra kết nối khi mở trang
+    checkConnection();
+</script>
+
+</body>
+</html>

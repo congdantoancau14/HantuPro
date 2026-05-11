@@ -1,0 +1,15 @@
+{
+  "short_name": "HánTựPro",
+  "name": "Tra cứu Hán Tự Đa Ngôn Ngữ",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3850/3850310.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1a73e8",
+  "background_color": "#ffffff"
+}
