@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hán Tự Pro - Supabase Status</title>
+    
+    <title>Hán Tự Pro - Tra Cứu Hán Tự Đa Ngôn Ngữ (Hán Việt, Pinyin, Onyomi)</title>
+    <meta name="description" content="Hán Tự Pro - Công cụ tra cứu chữ Hán đa ngôn ngữ trực tuyến tốc độ cao. Dịch chính xác âm Hán Việt, Pinyin (Bính âm) và Onyomi tiếng Nhật một cách dễ dàng.">
+    <meta name="keywords" content="hán tự pro, tra cứu chữ hán, dịch hán việt, pinyin, onyomi, từ điển hán nôm, tự học chữ hán">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="phuongtranlangit@gmail.com">
+    <link rel="canonical" href="https://congdantoancau14.github.io/HantuPro/">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://congdantoancau14.github.io/HantuPro/">
+    <meta property="og:title" content="Hán Tự Pro - Tra Cứu Hán Tự Đa Ngôn Ngữ">
+    <meta property="og:description" content="Tra cứu nhanh âm Hán Việt, Pinyin và Onyomi từ văn bản chữ Hán. Giao diện trực quan, dữ liệu chính xác.">
+    <meta property="og:image" content="https://congdantoancau14.github.io/HantuPro/icon.png"> <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://congdantoancau14.github.io/HantuPro/">
+    <meta name="twitter:title" content="Hán Tự Pro - Tra Cứu Hán Tự Đa Ngôn Ngữ">
+    <meta name="twitter:description" content="Tra cứu nhanh âm Hán Việt, Pinyin và Onyomi từ văn bản chữ Hán. Giao diện trực quan, dữ liệu chính xác.">
+    <meta name="twitter:image" content="https://congdantoancau14.github.io/HantuPro/icon.png">
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
@@ -12,8 +29,8 @@
             --error: #dc3545;
             --warning: #ffc107;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; background: #f8f9fa; color: #333; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; padding: 20px; background: #f8f9fa; color: #333; margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); flex: 1; width: 100%; box-sizing: border-box; }
         
         /* Cụm Label Trạng thái */
         .status-bar { display: flex; gap: 20px; margin-bottom: 20px; font-size: 14px; font-weight: bold; }
@@ -31,12 +48,19 @@
         textarea { width: 100%; height: 120px; padding: 15px; border-radius: 8px; border: 2px solid #ddd; font-size: 18px; box-sizing: border-box; transition: border 0.3s; }
         textarea:focus { border-color: var(--primary); outline: none; }
         
-        .result-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; }
-        .card { border: 1px solid #eee; padding: 12px; width: 140px; border-radius: 8px; background: #fff; transition: 0.2s; }
+        .result-container { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 25px; margin-bottom: 30px; }
+        .card { border: 1px solid #eee; padding: 12px; width: 140px; border-radius: 8px; background: #fff; transition: 0.2s; box-sizing: border-box;}
         .card:hover { transform: translateY(-3px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .card h3 { margin: 0 0 8px 0; font-size: 32px; color: var(--primary); text-align: center; border-bottom: 2px solid #f0f0f0; }
         .card p { margin: 4px 0; font-size: 13px; }
         .label-text { font-size: 10px; color: #999; text-transform: uppercase; display: block; }
+
+        /* === CSS FOOTER & COPYRIGHT === */
+        footer { text-align: center; padding: 20px; color: #666; font-size: 14px; margin-top: 40px; border-top: 1px solid #eee; }
+        footer a { color: var(--primary); text-decoration: none; font-weight: 500; }
+        footer a:hover { text-decoration: underline; }
+        .coffee-btn { display: inline-flex; align-items: center; gap: 6px; background: #ffdd00; color: #000000 !important; padding: 6px 12px; border-radius: 6px; font-weight: bold; font-size: 13px; text-decoration: none !important; margin-left: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); transition: 0.2s; }
+        .coffee-btn:hover { background: #ffea00; transform: scale(1.03); }
 
         @keyframes blink { 0% { opacity: 0.2; } 50% { opacity: 1; } 100% { opacity: 0.2; } }
     </style>
@@ -68,6 +92,16 @@
     
     <div id="result" class="result-container"></div>
 </div>
+
+<footer>
+    <p>
+        &copy; 2026 Hán Tự Pro. All rights reserved. 
+        | Liên hệ: <a href="mailto:phuongtranlangit@gmail.com">phuongtranlangit@gmail.com</a>
+        <a href="https://www.buymeacoffee.com/phuongtran" target="_blank" class="coffee-btn">
+            ☕ Buy me a coffee
+        </a>
+    </p>
+</footer>
 
 <script>
     // 1. Cấu hình Supabase
@@ -123,7 +157,7 @@
                 .in('Hanzi', chars);
 
             if (error) throw error;
-console.log(data)
+            console.log(data)
             // Cập nhật UI kết quả
             resultDiv.innerHTML = "";
             const originalChars = text.replace(/\s+/g, '').split('');
